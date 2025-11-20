@@ -1,28 +1,111 @@
-# 🐕 Woof to Go - Tu Compañero de Paseos
+📱 Manual de Usuario – Woof to Go
+🐶 Introducción
+Woof to Go es una aplicación diseñada para facilitar la comunicación entre dueños de mascotas y veterinarias, permitiendo solicitar citas, gestionar información y recibir recordatorios importantes desde un solo lugar.
 
-Una aplicación móvil desarrollada en Flutter para conectar dueños de mascotas con paseadores profesionales en Huancayo.
+📋 1. Pantalla de Inicio (Splash Screen)
+✨ ¿Qué muestra?
+El logo y nombre de la aplicación.
 
-## 🚀 Características
+Se visualiza solo unos segundos antes de pasar a la pantalla principal.
 
-- **👤 Autenticación de usuarios** con Firebase Auth
-- **🐕 Gestión de mascotas** con fotos y datos completos
-- **🚶 Sistema de reservas** con 20 paseadores en Huancayo
-- **🛍️ Tienda virtual** con carrito de compras
-- **📱 UI/UX moderna** y responsive
-- **📍 Integración con Google Maps**
-- **💬 Sistema de calificaciones**
+🎯 Propósito
+Brindar una introducción visual rápida al usuario mientras la app carga.
 
-## 🛠️ Tecnologías Utilizadas
+👋 2. Inicio de Sesión
+🧑‍💻 Opciones disponibles
+Iniciar sesión con correo y contraseña.
 
-- **Flutter** 3.0+
-- **Firebase** (Auth, Firestore)
-- **Google Maps** Flutter
-- **Image Picker** para fotos
-- **Geolocator** para ubicación
-- **Material Design** 3
+Navegar al registro si aún no tienes una cuenta.
 
-## 📸 Capturas de Pantalla
+🔒 Características
+Validación de datos.
 
-*[Agregar capturas después]*
+Acceso seguro a tu cuenta.
 
-## 🏗️ Estructura del Proyecto
+
+🆕 3. Registro de Usuario
+📝 Campos solicitados
+Nombre
+
+Correo
+
+Contraseña
+
+Confirmación de contraseña
+
+✔️ Resultado
+Crea una nueva cuenta para acceder a todas las funciones de Woof to Go.
+
+🏠 4. Pantalla Principal (Home)
+📌 ¿Qué encontrarás aquí?
+Acceso directo a todas las funciones principales:
+📅 Agendar citas
+
+🐾 Info de mascotas
+
+🏥 Clínicas o veterinarias
+
+📢 Notificaciones
+
+🎯 Propósito
+Ser el centro de navegación de la app.
+
+🐕 5. Registrar Mascota
+📝 Datos necesarios
+Nombre
+
+Raza
+
+Edad
+
+Sexo
+
+Peso
+
+Observaciones
+
+🎯 Función
+Permite almacenar toda la información relevante de tu mascota para futuras consultas o citas.
+
+📅 6. Registrar Citas
+🏥 Selecciona
+Tipo de servicio
+
+Veterinaria
+
+Fecha
+
+Hora
+
+
+✔️ Al finalizar
+La cita queda registrada y puedes visualizarla en tu historial.
+
+📚 7. Ver Citas Registradas
+👀 ¿Qué puedes hacer aquí?
+Revisar tus próximas citas
+
+Cancelarlas si es necesario
+
+Ver detalles de cada una
+
+🔔 8. Notificaciones
+📬 ¿Qué incluye?
+Recordatorios de próximas citas
+
+Mensajes importantes vinculados a tu mascota
+
+Comunicados generales
+
+⚙️ 9. Ajustes del Usuario
+🛠️ Opciones comunes
+Editar perfil
+
+Cambiar contraseña
+
+Cerrar sesión
+
+📞 Contacto
+Para soporte técnico o consultas:
+ ✉️ contacto@wooftogo.com
+ 📱 Disponible 24/7
