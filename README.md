@@ -1,4 +1,5 @@
 📱 Manual de Usuario – Woof to Go
+
 🐶 Introducción
 Woof to Go es una aplicación diseñada para facilitar la comunicación entre dueños de mascotas y veterinarias, permitiendo solicitar citas, gestionar información y recibir recordatorios importantes desde un solo lugar.
 
