@@ -1,16 +1,28 @@
-# perros
+# 🐕 Woof to Go - Tu Compañero de Paseos
 
-A new Flutter project.
+Una aplicación móvil desarrollada en Flutter para conectar dueños de mascotas con paseadores profesionales en Huancayo.
 
-## Getting Started
+## 🚀 Características
 
-This project is a starting point for a Flutter application.
+- **👤 Autenticación de usuarios** con Firebase Auth
+- **🐕 Gestión de mascotas** con fotos y datos completos
+- **🚶 Sistema de reservas** con 20 paseadores en Huancayo
+- **🛍️ Tienda virtual** con carrito de compras
+- **📱 UI/UX moderna** y responsive
+- **📍 Integración con Google Maps**
+- **💬 Sistema de calificaciones**
 
-A few resources to get you started if this is your first Flutter project:
+## 🛠️ Tecnologías Utilizadas
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+- **Flutter** 3.0+
+- **Firebase** (Auth, Firestore)
+- **Google Maps** Flutter
+- **Image Picker** para fotos
+- **Geolocator** para ubicación
+- **Material Design** 3
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## 📸 Capturas de Pantalla
+
+*[Agregar capturas después]*
+
+## 🏗️ Estructura del Proyecto
