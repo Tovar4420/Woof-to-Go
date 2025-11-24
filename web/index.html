@@ -1,108 +1,283 @@
-<!DOCTYPE html><html><head>
-  <!--
-    If you are serving your web app in a path other than the root, change the
-    href value below to reflect the base path you are serving from.
-
-    The path provided below has to start and end with a slash "/" in order for
-    it to work correctly.
-
-    For more details:
-    * https://developer.mozilla.org/en-US/docs/Web/HTML/Element/base
-
-    This is a placeholder for base href that will be replaced by the value of
-    the `--base-href` argument provided to `flutter build`.
-  -->
-  <base href="$FLUTTER_BASE_HREF">
-
-  <meta charset="UTF-8">
-  <meta content="IE=Edge" http-equiv="X-UA-Compatible">
-  <meta name="description" content="A new Flutter project.">
-
-  <!-- iOS meta tags & icons -->
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black">
-  <meta name="apple-mobile-web-app-title" content="perros">
-  <link rel="apple-touch-icon" href="icons/Icon-192.png">
-
-  <!-- Favicon -->
-  <link rel="icon" type="image/png" href="favicon.png">
-
-  <title>perros</title>
-  <link rel="manifest" href="manifest.json">
-  <style id="splash-screen-style">
-    html {
-      height: 100%
-    }
-
-    body {
-      margin: 0;
-      min-height: 100%;
-      background-color: #ffffff;
-          background-size: 100% 100%;
-    }
-
-    .center {
-      margin: 0;
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      -ms-transform: translate(-50%, -50%);
-      transform: translate(-50%, -50%);
-    }
-
-    .contain {
-      display:block;
-      width:100%; height:100%;
-      object-fit: contain;
-    }
-
-    .stretch {
-      display:block;
-      width:100%; height:100%;
-    }
-
-    .cover {
-      display:block;
-      width:100%; height:100%;
-      object-fit: cover;
-    }
-
-    .bottom {
-      position: absolute;
-      bottom: 0;
-      left: 50%;
-      -ms-transform: translate(-50%, 0);
-      transform: translate(-50%, 0);
-    }
-
-    .bottomLeft {
-      position: absolute;
-      bottom: 0;
-      left: 0;
-    }
-
-    .bottomRight {
-      position: absolute;
-      bottom: 0;
-      right: 0;
-    }
-  </style>
-  <script id="splash-screen-script">
-    function removeSplashFromWeb() {
-      document.getElementById("splash")?.remove();
-      document.getElementById("splash-branding")?.remove();
-      document.body.style.background = "transparent";
-    }
-  </script>
-  <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport">
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Woof to Go - Tu compañero de paseos</title>
+    <link rel="manifest" href="/manifest.json"> 
+    
+    <!-- Meta tags importantes -->
+    <meta name="description" content="Woof to Go - Encuentra paseadores para tus mascotas y productos pet en Huancayo">
+    
+    <!-- Favicon básico -->
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA3g0FgShynW4WRPx7M20vmZuzoP4NQfI8"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        
+        /* Contenedor principal responsive */
+        .app-container {
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 0;
+        }
+        
+        /* Flutter app wrapper */
+        #flutter-target {
+            width: 100%;
+            height: 100vh;
+            position: relative;
+            background: white;
+            box-shadow: none;
+            border-radius: 0;
+            overflow: hidden;
+        }
+        
+        /* Responsive design para desktop */
+        @media (min-width: 768px) {
+            .app-container {
+                padding: 20px;
+            }
+            
+            #flutter-target {
+                max-width: 480px;
+                height: 90vh;
+                max-height: 900px;
+                border-radius: 24px;
+                box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3),
+                            0 0 0 1px rgba(255, 255, 255, 0.1);
+                overflow: hidden;
+            }
+        }
+        
+        @media (min-width: 1200px) {
+            #flutter-target {
+                max-width: 420px;
+            }
+        }
+        
+        /* Loading screen */
+        .loading-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            z-index: 9999;
+        }
+        
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(255,255,255,0.3);
+            border-top: 4px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .loading-text {
+            font-size: 18px;
+            font-weight: 500;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+        
+        /* Error message */
+        .error-message {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            padding: 30px;
+            background: white;
+            color: #c62828;
+            border-radius: 16px;
+            margin: 20px;
+            max-width: 400px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            z-index: 10000;
+        }
+        
+        .error-message h3 {
+            margin-bottom: 15px;
+            font-size: 20px;
+        }
+        
+        .error-message p {
+            margin-bottom: 20px;
+            color: #666;
+        }
+        
+        .error-message button {
+            background: #2196F3;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background 0.3s;
+        }
+        
+        .error-message button:hover {
+            background: #1976D2;
+        }
+        
+        /* Ocultar loading cuando Flutter cargue */
+        .flutter-loaded .loading-container {
+            display: none;
+        }
+        
+        /* Decoración de fondo para desktop */
+        @media (min-width: 768px) {
+            body::before {
+                content: '';
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: 
+                    radial-gradient(circle at 20% 30%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+                    radial-gradient(circle at 80% 70%, rgba(255, 255, 255, 0.05) 0%, transparent 50%);
+                pointer-events: none;
+            }
+        }
+    </style>
 </head>
 <body>
-  <picture id="splash">
-      <source srcset="splash/img/light-1x.png 1x, splash/img/light-2x.png 2x, splash/img/light-3x.png 3x, splash/img/light-4x.png 4x" media="(prefers-color-scheme: light)">
-      <source srcset="splash/img/dark-1x.png 1x, splash/img/dark-2x.png 2x, splash/img/dark-3x.png 3x, splash/img/dark-4x.png 4x" media="(prefers-color-scheme: dark)">
-      <img class="center" aria-hidden="true" src="splash/img/light-1x.png" alt="">
-  </picture>
-  <script src="flutter_bootstrap.js" async=""></script>
+    <!-- Loading Screen -->
+    <div id="loading" class="loading-container">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">Cargando Woof to Go...</div>
+    </div>
+    
+    <!-- Error Message -->
+    <div id="error-message" class="error-message">
+        <h3>⚠️ Error al cargar la aplicación</h3>
+        <p>Por favor, recarga la página o verifica tu conexión a internet.</p>
+        <button onclick="location.reload()">Reintentar</button>
+    </div>
+    
+    <!-- App Container -->
+    <div class="app-container">
+        <div id="flutter-target"></div>
+    </div>
 
+    <!-- Firebase SDK para Web -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    
+    <script>
+        // Configuración de Firebase para Web
+        const firebaseConfig = {
+            apiKey: "AIzaSyBRyE61scbI21_JjKyW062VL5eYiHjSs3U",
+            authDomain: "wof-to-go.firebaseapp.com",
+            projectId: "wof-to-go",
+            storageBucket: "wof-to-go.firebasestorage.app",
+            messagingSenderId: "630214947261",
+            appId: "1:630214947261:web:56d9e64b347e5016af22d4"
+        };
 
-</body></html>
+        // Inicializar Firebase
+        try {
+            firebase.initializeApp(firebaseConfig);
+            console.log('✅ Firebase inicializado correctamente para web');
+        } catch (error) {
+            console.error('❌ Error inicializando Firebase:', error);
+        }
+    </script>
+
+    <script>
+        console.log('🚀 Iniciando carga de Woof to Go...');
+        
+        // Manejar errores globales
+        window.addEventListener('error', function(e) {
+            console.error('❌ Error global detectado:', e.error);
+            showError('Error: ' + e.error);
+        });
+        
+        // Manejar promesas rechazadas
+        window.addEventListener('unhandledrejection', function(e) {
+            console.error('❌ Promesa rechazada:', e.reason);
+            showError('Error: ' + e.reason);
+        });
+        
+        // Cuando Flutter está listo
+        window.addEventListener('flutter-first-frame', function() {
+            console.log('✅ Flutter cargado correctamente!');
+            hideLoading();
+        });
+        
+        // Timeout de seguridad
+        setTimeout(function() {
+            var loading = document.getElementById('loading');
+            if (loading && loading.style.display !== 'none') {
+                console.warn('⚠️ Timeout de carga excedido');
+                showError('La aplicación está tardando más de lo esperado. Por favor, recarga la página.');
+            }
+        }, 15000);
+        
+        function hideLoading() {
+            var loading = document.getElementById('loading');
+            if (loading) {
+                loading.style.display = 'none';
+            }
+            document.body.classList.add('flutter-loaded');
+        }
+        
+        function showError(message) {
+            var errorDiv = document.getElementById('error-message');
+            var loading = document.getElementById('loading');
+            
+            if (loading) loading.style.display = 'none';
+            if (errorDiv) {
+                errorDiv.style.display = 'block';
+                errorDiv.innerHTML = '<h3>⚠️ Error al cargar la aplicación</h3><p>' + message + '</p><button onclick="location.reload()">Reintentar</button>';
+            }
+        }
+        
+        console.log('📝 Script de inicialización completado');
+    </script>
+    
+    <!-- Cargar Flutter -->
+    <script src="flutter_bootstrap.js" defer></script>
+</body>
+</html>

@@ -10,6 +10,8 @@ import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'dart:async';
+import 'firebase_web_config.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -18,7 +20,16 @@ void main() async {
   print('🚀 --------- APP INICIADA ----------');
   print('🚀 =================================');
   
-  await FirebaseService.initialize();
+  // Configuración específica para web
+  if (kIsWeb) {
+    // Configuración para WEB
+    await Firebase.initializeApp(
+      options: FirebaseWebConfig.firebaseOptions,
+    );
+  } else {
+    // Configuración para MÓVIL (Android/iOS)
+    await Firebase.initializeApp();
+  }
   runApp(const WoofToGoApp());
 }
 
@@ -2266,238 +2277,307 @@ class MarketplacePage extends StatefulWidget {
 
 class _MarketplacePageState extends State<MarketplacePage> {
   final CartManager _cartManager = CartManager();
+  final TextEditingController _searchController = TextEditingController();
+  final FocusNode _searchFocusNode = FocusNode();
+  
+  List<Map<String, dynamic>> _filteredProducts = [];
+  bool _showSuggestions = false;
 
-  @override
-  Widget build(BuildContext context) {
-    final products = [
-      // ALIMENTOS
+  final List<Map<String, dynamic>> _allProducts = [
+    // ALIMENTOS
       {
         'name': 'Alimento para Adulto állkjoy',
         'price': '45.00',
         'category': 'Alimento',
-        'image': 'https://drive.google.com/uc?export=view&id=1ekZ2BcC8uxZQxPWtDigZ2sr-0nDboagx'
+        'image': 'https://drive.google.com/uc?export=view&id=14ZielQDvD1rMLA3u277rWhI-OcQybSon'
       },
             {
         'name': 'Alimento con verduras y pollo',
         'price': '12.00',
         'category': 'Alimento',
-        'image': 'https://drive.google.com/uc?export=view&id=1QArwVWXjfJFPg4Zi02YQR3BWy0lVhScW'
+        'image': 'https://drive.google.com/uc?export=view&id=1TnDKoHpnnA1EN0Nhq601oAGl2RQmu3Qk'
       },
       {
         'name': 'Pedigri para Adulto',
         'price': '28.00',
         'category': 'Alimento',
-        'image': 'https://drive.google.com/uc?export=view&id=1ESNljj8LFZN0qywQkt-JqEUyMo9LclNR'
+        'image': 'https://drive.google.com/uc?export=view&id=1d5sIvkQlIhjtGZuMRiOG-MUX7_V1dKWU'
       },
       {
         'name': 'Alimento Cesar para Cachorros',
         'price': '28.00',
         'category': 'Alimento',
-        'image': 'https://drive.google.com/uc?export=view&id=1Uqcwm5585gpwx2WBw1U_NvSbY_4OArJd'
+        'image': 'https://drive.google.com/uc?export=view&id=1lIv8jS4SMbD7rQ0FlJ0ZeoKlUYj6qOPK'
       },
       {
         'name': 'Comida Húmeda para Cachorros',
         'price': '28.00',
         'category': 'Alimento',
-        'image': 'https://drive.google.com/uc?export=view&id=1kbXXnaM9yBLO07mV1yi-i300vgYA74C8'
+        'image': 'https://drive.google.com/uc?export=view&id=1OPjkKIsPM28_kxd_0ygGXfMjWEVP8MLU'
       },
       {
         'name': 'Purina MOIST & MEATY',
         'price': '28.00',
         'category': 'Alimento',
-        'image': 'https://drive.google.com/uc?export=view&id=1-bA1NOYsXOfXX_muRVhj37bJB_jEY0xn'
+        'image': 'https://drive.google.com/uc?export=view&id=19eGmhWYXn9MKG8YLWY0NByyngj5S7Im8'
       },
       {
         'name': 'Mio Cane adulto para razas Pequeñas',
         'price': '28.00',
         'category': 'Alimento',
-        'image': 'https://drive.google.com/uc?export=view&id=1Lx33mukHrN8XRQu6IaX7UHtI5FILC0Di'
+        'image': 'https://drive.google.com/uc?export=view&id=1JQOE-3b0EhaFcbUGyE70XRNw1_vX3eCf'
       },
       {
         'name': 'Purina Pro Plan para Adultos',
         'price': '28.00',
         'category': 'Alimento',
-        'image': 'https://drive.google.com/uc?export=view&id=1pdO9O4EDmPhSrvXrR8WXGK8fZUiyUFFE'
+        'image': 'https://drive.google.com/uc?export=view&id=11j8xdMzGT8Wyrap76p8lDTdjRmkWdiaY'
       },
       {
         'name': 'Snacks de pechuga de pollo',
         'price': '28.00',
         'category': 'Alimento',
-        'image': 'https://drive.google.com/uc?export=view&id=1VYXBjzcQNnaVhvAu3u4EMQC_a5tzNXPj'
+        'image': 'https://drive.google.com/uc?export=view&id=1Cyraj6py5B0wZXxLGaQ0pDobs-pezfEY'
       },
       // JUGUETES
       {
         'name': 'Pelota Interactiva con Luces',
         'price': '40.00',
         'category': 'Juguete',
-        'image': 'https://drive.google.com/uc?export=view&id=1z9GyszQd40g5Vs1Jx9-Ju739EmjDsF1I'
+        'image': 'https://drive.google.com/uc?export=view&id=1dOBtEGEx8_nKXlY8cu_JrBu-OAxzJnsB'
       },
       {
         'name': 'Pelota interacctiva de goma con Sonido',
         'price': '30.00',
         'category': 'Juguete',
-        'image': 'https://drive.google.com/uc?export=view&id=1Rqp01pF6cFk6037Mq9D4nCrHkizbbKNV'
+        'image': 'https://drive.google.com/uc?export=view&id=18C2gQ0c58oc_pyRz3DjngBUz-8-Dqudx'
       },
       {
         'name': 'Soga con mordedera para perros',
         'price': '20.00',
         'category': 'Juguete',
-        'image': 'https://drive.google.com/uc?export=view&id=17lvr-i8z3BoUBC16IusFd7JiFZzzk0SD'
+        'image': 'https://drive.google.com/uc?export=view&id=1-2VQL0XuxO1KXuY2XwxECf1lbkHgLn4A'
       },
       {
         'name': 'Soga corta con mordedera para perros',
         'price': '15.00',
         'category': 'Juguete',
-        'image': 'https://drive.google.com/uc?export=view&id=10sSDsPGT7B2gnAcRgAEBXy67B3EIG2Ko'
+        'image': 'https://drive.google.com/uc?export=view&id=1uoYznErvL2ZWGMVIBvNqkekoUP6G5vs2'
       },
       {
         'name': 'Peluche con diseño de perro',
         'price': '20.00',
         'category': 'Juguete',
-        'image': 'https://drive.google.com/uc?export=view&id=1zlz_I_1-ohCjWB76V_FAc8M7ZX26vf3T'
+        'image': 'https://drive.google.com/uc?export=view&id=1g8RC6PfImPpc7Hl4QOEOsnDRi2EIhG2p'
       },
       {
         'name': 'Pollo de hule para perros',
         'price': '15.00',
         'category': 'Juguete',
-        'image': 'https://drive.google.com/uc?export=view&id=1DASMrqXdEYIlToa_Ci2Hhm3ZIB1n2C-o'
+        'image': 'https://drive.google.com/uc?export=view&id=1Yl4_4Q0fhNsq-ceh4LiwN7LAK4R3rprN'
       },
       {
         'name': 'Hueso de carne seca comestible',
         'price': '30.00',
         'category': 'Juguete',
-        'image': 'https://drive.google.com/uc?export=view&id=10M74u9rcHY9W8_aVBWRsq6KchVtZzTM7'
+        'image': 'https://drive.google.com/uc?export=view&id=19H-mAyVjjKyRx-1L1lqOitcnWIHzLn-G'
       },
       {
         'name': 'Mordedero con diseño de zanahoria',
         'price': '15.00',
         'category': 'Juguete',
-        'image': 'https://drive.google.com/uc?export=view&id=1VhnAF26AnOD4AHiz0SjUYSBtkiEz8vJi'
+        'image': 'https://drive.google.com/uc?export=view&id=1R1IyyPVn4RhxNViPqwneFoAsji6Xl60W'
       },
       {
         'name': 'Juguete con forma de hueso',
         'price': '10.00',
         'category': 'Juguete',
-        'image': 'https://drive.google.com/uc?export=view&id=1XUUSx9-_pNSKyGD_lzeOhpoJu8RQlOhr'
+        'image': 'https://drive.google.com/uc?export=view&id=1Slr91tCsC7BmfyPqwlo4u4cVG8SNUS-u'
       },
       // ACCESORIOS
       {
         'name': 'Arnes Ajustable',
         'price': '20.00',
         'category': 'Accesorio',
-        'image': 'https://drive.google.com/uc?export=view&id=1Y0l5EtcHk5BEGbja89OqwRIMQi5pv2ve'
+        'image': 'https://drive.google.com/uc?export=1erTVyxEzDXkFp7r0HrdMbkpVJ7C-igKz'
       },
       {
         'name': 'Arnes para perro Adulto',
         'price': '25.00',
         'category': 'Accesorio',
-        'image': 'https://drive.google.com/uc?export=view&id=1M7qvObkYJ7XFaYTjkBD1L1gnuO3nRxoT'
+        'image': 'https://drive.google.com/uc?export=view&id=1lax7mgbNmIrat7ir0VPcoBKIMxtciGuG'
       },
       {
         'name': 'Arnés de Paseo Ajustable',
         'price': '20.00',
         'category': 'Accesorio',
-        'image': 'https://drive.google.com/uc?export=view&id=1qTQTUX5ptGKy47uHuE7BidOWmsgYwoCX'
+        'image': 'https://drive.google.com/uc?export=view&id=1hJyMO9Epyg17mdrb2TwrrUBByIOcjzfS'
       },
       {
         'name': 'Casa para Perro Exterior',
         'price': '120.00',
         'category': 'Accesorio',
-        'image': 'https://drive.google.com/uc?export=view&id=15n4pvnnSoXSArj75ce3HeQsef6YVzq8F'
+        'image': 'https://drive.google.com/uc?export=view&id=1Zo1ArSloL7tx9uwfANjC6aplGfoiJxHW'
       },
       {
         'name': 'Correa Reflectante',
         'price': '30.00',
         'category': 'Accesorio',
-        'image': 'https://drive.google.com/uc?export=view&id=18KYKePR9IB56MP1K6MvpPXDhKLl81o57'
+        'image': 'https://drive.google.com/uc?export=view&id=1LxIqdB60zBWhIp6saHhgD9FqNTa78Hkj'
       },
       {
         'name': 'Correa Retraible Larga',
         'price': '25.00',
         'category': 'Accesorio',
-        'image': 'https://drive.google.com/uc?export=view&id=1UeYMLzLoL3TG6GgitN_BOYsrUawDMl8u'
+        'image': 'https://drive.google.com/uc?export=view&id=1l509pE_fuHe7LpfcTykK0-kQEbb2cIoy'
       },
       {
         'name': 'Correa Retraible Corta',
         'price': '20.00',
         'category': 'Accesorio',
-        'image': 'https://drive.google.com/uc?export=view&id=1fO68Mc5zLll2zVG9njhUmYJQ9luRoE5W'
+        'image': 'https://drive.google.com/uc?export=view&id=1uJ3qLZ9XikwYpFM8IxAc9-S88knOihmh'
       },
       {
         'name': 'Correa retraible de Colores',
         'price': '20.00',
         'category': 'Accesorio',
-        'image': 'https://drive.google.com/uc?export=view&id=1kmPxHOINwWLvyIiTZD5i7PWLLEMt8ZjW'
+        'image': 'https://drive.google.com/uc?export=view&id=1Rhxa6K7M4ZINpmEE_Tr-pNSYZ7tcTBH1'
       },
       {
         'name': 'Correa con bosal para perros',
         'price': '35.00',
         'category': 'Accesorio',
-        'image': 'https://drive.google.com/uc?export=view&id=1Y7-IoJP4wMy4FZ5WqG0hBjfmoe6kcyP6'
+        'image': 'https://drive.google.com/uc?export=view&id=1WcDa4Dstjsr8-qqYZWiup6IdrB35aolP'
       },
       {
         'name': 'Plato doble para Perros con soporte',
         'price': '40.00',
         'category': 'Accesorio',
-        'image': 'https://drive.google.com/uc?export=view&id=11oPs8rTkmi0ZYj2ivE_GTuzqbiCay26E'
+        'image': 'https://drive.google.com/uc?export=view&id=1kriLGTCGlnVTHdmYABo3QLD5oxCmvyER'
       },
       {
         'name': 'Plato doble para Perros',
         'price': '30.00',
         'category': 'Accesorio',
-        'image': 'https://drive.google.com/uc?export=view&id=13e7XFHhOgW4IU7Kujl_TEyjsK5_8gWBi'
+        'image': 'https://drive.google.com/uc?export=view&id=1E50GHNInmT2y4CPYFal6cZZvvYoakr-S'
       },
       {
         'name': 'Plato de aluminio para perro adulto',
         'price': '20.00',
         'category': 'Accesorio',
-        'image': 'https://drive.google.com/uc?export=view&id=1GzVs03J6BYVlWGynFfhpPdyyuCoNrgSN'
+        'image': 'https://drive.google.com/uc?export=view&id=1E9sSk30KwcF-sepRpRpokJETpxLx3gd1'
       },
       {
         'name': 'Plato de 8 onzas para perro',
         'price': '60.00',
         'category': 'Accesorio',
-        'image': 'https://drive.google.com/uc?export=view&id=1f8OIlXENC2uXZuRY6y5BXvbyCTA9PsTc'
+        'image': 'https://drive.google.com/uc?export=view&id=1DuQnWEyix-tJ16oWtQd85bLr9swFruwp'
       },
       {
         'name': 'Ropa termica para perros pequeños',
         'price': '60.00',
         'category': 'Accesorio',
-        'image': 'https://drive.google.com/uc?export=view&id=1nYswkB6rC8yCAGKBQA1kT97tQ_F2tbrL'
+        'image': 'https://drive.google.com/uc?export=view&id=1xmhAoBxvHA0ts_marpVytIsRAUn61NB4'
       },
       {
         'name': 'Vestido para perro Hembra',
         'price': '30.00',
         'category': 'Accesorio',
-        'image': 'https://drive.google.com/uc?export=view&id=163LqMdBikbIZ40X1MqiNKCAqyUPBxfKm'
+        'image': 'https://drive.google.com/uc?export=view&id=128KzhU5zowrHrLdh77YmYh4NG-kl5XkN'
       },
       {
         'name': 'Abrigo para perro Macho',
         'price': '50.00',
         'category': 'Accesorio',
-        'image': 'https://drive.google.com/uc?export=view&id=1AbDOiusG5J7k7bqcJB_ToWJ9ZN-7Rdd0'
+        'image': 'https://drive.google.com/uc?export=view&id=1bSHOV1llXosQBFSklEJJNJIriVWWv5bt'
       },
       {
         'name': 'Abrigo ajustable',
         'price': '70.00',
         'category': 'Accesorio',
-        'image': 'https://drive.google.com/uc?export=view&id=10kKePAdF58baZpe8UEEJx-__y4Myzsjb'
+        'image': 'https://drive.google.com/uc?export=view&id=1wsvzACMZ2lV1R_tGMucAnJ3PTDXr4baS'
       },
       {
         'name': 'Abrigo ajustable con cuello alto para perro',
         'price': '90.00',
         'category': 'Accesorio',
-        'image': 'https://drive.google.com/uc?export=view&id=1nfQtQ4bh-QB2PUDyAJh8F60TZ0hrq7em'
+        'image': 'https://drive.google.com/uc?export=view&id=1cWYmOtP-9A_ofqwOysf2EBD-zSW9BsnE'
       },
       {
         'name': 'Ropa impermeable para perros',
         'price': '150.00',
         'category': 'Accesorio',
-        'image': 'https://drive.google.com/uc?export=view&id=1SEYBrJwpBAN_ei-VLBCGyTYFNWv6T78c'
+        'image': 'https://drive.google.com/uc?export=view&id=1FXkMjl4mxBBTJTuUsOfrSjSnykW-zAgg'
       },
+  ];
 
-    ];
+  @override
+  void initState() {
+    super.initState();
+    _filteredProducts = List.from(_allProducts);
+    
+    // Listener para el campo de búsqueda
+    _searchController.addListener(_filterProducts);
+    
+    // Listener para detectar cuando el campo pierde el foco
+    _searchFocusNode.addListener(() {
+      if (!_searchFocusNode.hasFocus) {
+        // Pequeño delay para permitir clicks en las sugerencias
+        Future.delayed(const Duration(milliseconds: 200), () {
+          if (mounted) {
+            setState(() {
+              _showSuggestions = false;
+            });
+          }
+        });
+      }
+    });
+  }
 
+  void _filterProducts() {
+    final query = _searchController.text.toLowerCase().trim();
+    
+    setState(() {
+      if (query.isEmpty) {
+        _filteredProducts = List.from(_allProducts);
+        _showSuggestions = false;
+      } else {
+        _filteredProducts = _allProducts.where((product) {
+          final name = product['name']!.toLowerCase();
+          final category = product['category']!.toLowerCase();
+          return name.contains(query) || category.contains(query);
+        }).toList();
+        _showSuggestions = _filteredProducts.isNotEmpty && _searchFocusNode.hasFocus;
+      }
+    });
+  }
+
+  void _selectProduct(Map<String, dynamic> product) {
+    _searchController.text = product['name']!;
+    setState(() {
+      _showSuggestions = false;
+      _filteredProducts = [product];
+    });
+    _searchFocusNode.unfocus();
+  }
+
+  void _clearSearch() {
+    _searchController.clear();
+    setState(() {
+      _filteredProducts = List.from(_allProducts);
+      _showSuggestions = false;
+    });
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    _searchFocusNode.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Tienda'),
@@ -2546,93 +2626,339 @@ class _MarketplacePageState extends State<MarketplacePage> {
           ),
         ],
       ),
-      body: GridView.builder(
-        padding: const EdgeInsets.all(16),
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-          childAspectRatio: 0.65,
-          crossAxisSpacing: 12,
-          mainAxisSpacing: 12,
-        ),
-        itemCount: products.length,
-        itemBuilder: (context, index) {
-          final product = products[index];
-          return Card(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      body: Column(
+        children: [
+          // BARRA DE BÚSQUEDA CON AUTOCOMPLETADO
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.05),
+                  blurRadius: 4,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Expanded(
-                  child: ClipRRect(
-                    borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
-                    child: Image.network(
-                      product['image']!,
-                      width: double.infinity,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
-                        return Container(
-                          color: Colors.grey[200],
-                          child: const Center(
-                            child: Icon(Icons.shopping_bag, size: 40, color: Colors.grey),
+                TextField(
+                  controller: _searchController,
+                  focusNode: _searchFocusNode,
+                  decoration: InputDecoration(
+                    hintText: 'Buscar productos...',
+                    prefixIcon: const Icon(Icons.search, color: Colors.grey),
+                    suffixIcon: _searchController.text.isNotEmpty
+                        ? IconButton(
+                            icon: const Icon(Icons.clear, color: Colors.grey),
+                            onPressed: _clearSearch,
+                          )
+                        : null,
+                    filled: true,
+                    fillColor: Colors.grey[100],
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide.none,
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 14,
+                    ),
+                  ),
+                  onTap: () {
+                    if (_searchController.text.isNotEmpty && _filteredProducts.isNotEmpty) {
+                      setState(() {
+                        _showSuggestions = true;
+                      });
+                    }
+                  },
+                ),
+                
+                // SUGERENCIAS DE AUTOCOMPLETADO
+                if (_showSuggestions && _searchController.text.isNotEmpty)
+                  Container(
+                    margin: const EdgeInsets.only(top: 8),
+                    constraints: const BoxConstraints(maxHeight: 250),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.grey[300]!),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.1),
+                          blurRadius: 8,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: ListView.builder(
+                      shrinkWrap: true,
+                      padding: EdgeInsets.zero,
+                      itemCount: _filteredProducts.take(5).length,
+                      itemBuilder: (context, index) {
+                        final product = _filteredProducts[index];
+                        return InkWell(
+                          onTap: () => _selectProduct(product),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 12,
+                            ),
+                            decoration: BoxDecoration(
+                              border: Border(
+                                bottom: BorderSide(
+                                  color: Colors.grey[200]!,
+                                  width: 1,
+                                ),
+                              ),
+                            ),
+                            child: Row(
+                              children: [
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(6),
+                                  child: Image.network(
+                                    product['image']!,
+                                    width: 40,
+                                    height: 40,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (context, error, stackTrace) {
+                                      return Container(
+                                        width: 40,
+                                        height: 40,
+                                        color: Colors.grey[200],
+                                        child: const Icon(
+                                          Icons.shopping_bag,
+                                          size: 20,
+                                          color: Colors.grey,
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        product['name']!,
+                                        style: const TextStyle(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                      const SizedBox(height: 2),
+                                      Row(
+                                        children: [
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 6,
+                                              vertical: 2,
+                                            ),
+                                            decoration: BoxDecoration(
+                                              color: Colors.blue[50],
+                                              borderRadius: BorderRadius.circular(4),
+                                            ),
+                                            child: Text(
+                                              product['category']!,
+                                              style: TextStyle(
+                                                fontSize: 10,
+                                                color: Colors.blue[700],
+                                              ),
+                                            ),
+                                          ),
+                                          const SizedBox(width: 8),
+                                          Text(
+                                            '\$${product['price']}',
+                                            style: TextStyle(
+                                              fontSize: 12,
+                                              color: Colors.grey[600],
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                Icon(
+                                  Icons.arrow_forward_ios,
+                                  size: 14,
+                                  color: Colors.grey[400],
+                                ),
+                              ],
+                            ),
                           ),
                         );
                       },
                     ),
                   ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        product['name']!,
-                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        product['category']!,
-                        style: TextStyle(color: Colors.grey[600], fontSize: 12),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        '\$${product['price']!}',
-                        style: const TextStyle(
-                          color: Colors.blue,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      ElevatedButton(
-                        onPressed: () {
-                          setState(() {
-                            _cartManager.addItem(product);
-                          });
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('${product['name']} agregado al carrito'),
-                              backgroundColor: Colors.green,
-                              duration: const Duration(seconds: 1),
-                            ),
-                          );
-                        },
-                        style: ElevatedButton.styleFrom(
-                          minimumSize: const Size(double.infinity, 32),
-                          backgroundColor: Colors.blue,
-                          foregroundColor: Colors.white,
-                        ),
-                        child: const Text('Agregar', style: TextStyle(fontSize: 12)),
-                      ),
-                    ],
-                  ),
-                ),
               ],
             ),
-          );
-        },
+          ),
+
+          // CONTADOR DE RESULTADOS
+          if (_searchController.text.isNotEmpty)
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: Row(
+                children: [
+                  Icon(Icons.filter_list, size: 16, color: Colors.grey[600]),
+                  const SizedBox(width: 8),
+                  Text(
+                    '${_filteredProducts.length} producto${_filteredProducts.length != 1 ? 's' : ''} encontrado${_filteredProducts.length != 1 ? 's' : ''}',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.grey[600],
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+          // GRID DE PRODUCTOS
+          Expanded(
+            child: _filteredProducts.isEmpty
+                ? Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.search_off,
+                          size: 80,
+                          color: Colors.grey[300],
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          'No se encontraron productos',
+                          style: TextStyle(
+                            fontSize: 18,
+                            color: Colors.grey[600],
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'Intenta con otra búsqueda',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.grey[500],
+                          ),
+                        ),
+                      ],
+                    ),
+                  )
+                : GridView.builder(
+                    padding: const EdgeInsets.all(16),
+                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2,
+                      childAspectRatio: 0.65,
+                      crossAxisSpacing: 12,
+                      mainAxisSpacing: 12,
+                    ),
+                    itemCount: _filteredProducts.length,
+                    itemBuilder: (context, index) {
+                      final product = _filteredProducts[index];
+                      return Card(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Expanded(
+                              child: ClipRRect(
+                                borderRadius: const BorderRadius.vertical(
+                                  top: Radius.circular(12),
+                                ),
+                                child: Image.network(
+                                  product['image']!,
+                                  width: double.infinity,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) {
+                                    return Container(
+                                      color: Colors.grey[200],
+                                      child: const Center(
+                                        child: Icon(
+                                          Icons.shopping_bag,
+                                          size: 40,
+                                          color: Colors.grey,
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    product['name']!,
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 14,
+                                    ),
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    product['category']!,
+                                    style: TextStyle(
+                                      color: Colors.grey[600],
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    '\$${product['price']!}',
+                                    style: const TextStyle(
+                                      color: Colors.blue,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 16,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  ElevatedButton(
+                                    onPressed: () {
+                                      setState(() {
+                                        _cartManager.addItem(product);
+                                      });
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(
+                                          content: Text(
+                                            '${product['name']} agregado al carrito',
+                                          ),
+                                          backgroundColor: Colors.green,
+                                          duration: const Duration(seconds: 1),
+                                        ),
+                                      );
+                                    },
+                                    style: ElevatedButton.styleFrom(
+                                      minimumSize: const Size(double.infinity, 32),
+                                      backgroundColor: Colors.blue,
+                                      foregroundColor: Colors.white,
+                                    ),
+                                    child: const Text('Agregar', style: TextStyle(fontSize: 12),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+          ),
+        ],
       ),
     );
   }

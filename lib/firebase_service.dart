@@ -1,6 +1,8 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'firebase_web_config.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 
 class FirebaseService {
   static final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -8,7 +10,16 @@ class FirebaseService {
 
   // Inicializar Firebase
   static Future<void> initialize() async {
-    await Firebase.initializeApp();
+    if (kIsWeb) {
+      // Para WEB
+      await Firebase.initializeApp(
+        options: FirebaseWebConfig.firebaseOptions,
+      );
+    } else {
+      // Para MÓVIL
+      await Firebase.initializeApp();
+    }
+    print('✅ Firebase inicializado para: ${kIsWeb ? 'WEB' : 'MÓVIL'}');
   }
 
   // Registro de usuario
